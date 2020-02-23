@@ -5,6 +5,15 @@ const { Post, validate } = require("../models/posts");
 const { User } = require("../models/users");
 const router = express.Router();
 
+router.get("/", async (req, res) => {
+  let posts = await Post.find()
+    .select("location amountSpend postBy postBody time comments likes")
+    .populate("postBy", "name")
+    .populate("comments.commentBy", "name");
+  if (posts.length > 0) res.send(posts);
+  res.send("No posts to show");
+});
+
 router.post("/", async (req, res) => {
   const { error } = validate(
     _.pick(req.body, ["postBody", "location", "amountSpend"])
@@ -12,9 +21,10 @@ router.post("/", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   let post = new Post({
-    body: req.body.postBody,
+    postBody: req.body.postBody,
     location: req.body.location,
-    amountSpend: req.body.amountSpend
+    amountSpend: req.body.amountSpend,
+    postBy: req.body._id
   });
 
   await post.save();
