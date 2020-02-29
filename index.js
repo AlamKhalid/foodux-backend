@@ -8,6 +8,7 @@ const users = require("./routes/users");
 const posts = require("./routes/posts");
 const cities = require("./routes/cities");
 const comments = require("./routes/comments");
+const likes = require("./routes/likes");
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/auth", auth);
 app.use("/api/posts", posts);
 app.use("/api/cities", cities);
 app.use("/api/comments", comments);
+app.use("/api/likes", likes);
 app.use(error);
 
 const port = process.env.PORT || 4000;

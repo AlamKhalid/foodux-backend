@@ -5,11 +5,22 @@ const { Post, validate } = require("../models/posts");
 const { User } = require("../models/users");
 const router = express.Router();
 
+router.get("/:id", async (req, res) => {
+  const post = await Post.findById(req.params.id)
+    .select("location amountSpend postBy postBody time comments likes")
+    .populate("postBy", "name")
+    .populate("comments.commentBy", "name")
+    .populate("likes", "name");
+  res.send(post);
+});
+
 router.get("/", async (req, res) => {
   let posts = await Post.find()
     .select("location amountSpend postBy postBody time comments likes")
     .populate("postBy", "name")
-    .populate("comments.commentBy", "name");
+    .populate("comments.commentBy", "name")
+    .populate("likes", "name")
+    .sort("-date -time");
   if (posts.length > 0) res.send(posts);
   res.send("No posts to show");
 });
