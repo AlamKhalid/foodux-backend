@@ -1,19 +1,10 @@
 require("express-async-errors");
 const express = require("express");
 const _ = require("lodash");
-const Joi = require("joi");
+const validateUserPostIds = require("../helper/validateUserPostIds");
 const { Post } = require("../models/posts");
 const { User } = require("../models/users");
 const router = express.Router();
-
-validatePostOptions = body => {
-  const schema = {
-    postId: Joi.string().required(),
-    userId: Joi.string().required()
-  };
-
-  return Joi.validate(body, schema);
-};
 
 router.get("/:id/posts", async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -21,7 +12,7 @@ router.get("/:id/posts", async (req, res) => {
 });
 
 router.post("/inc", async (req, res) => {
-  const { error } = validatePostOptions(req.body);
+  const { error } = validateUserPostIds(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const post = await Post.findById(req.body.postId);
@@ -35,11 +26,11 @@ router.post("/inc", async (req, res) => {
   await post.save();
   await user.save();
 
-  res.send(_.pick(post, ["likes"]));
+  res.send(post);
 });
 
 router.post("/dec", async (req, res) => {
-  const { error } = validatePostOptions(req.body);
+  const { error } = validateUserPostIds(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   const post = await Post.findById(req.body.postId);
@@ -54,7 +45,7 @@ router.post("/dec", async (req, res) => {
   await post.save();
   await user.save();
 
-  res.send(_.pick(post, ["likes"]));
+  res.send(post);
 });
 
 module.exports = router;

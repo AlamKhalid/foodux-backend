@@ -15,6 +15,12 @@ const userSchema = new mongoose.Schema({
       ref: "Post"
     }
   ],
+  hiddenPosts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post"
+    }
+  ],
   following: [
     {
       type: mongoose.Schema.Types.ObjectId,
