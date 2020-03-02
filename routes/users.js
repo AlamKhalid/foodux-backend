@@ -2,6 +2,8 @@ require("express-async-errors");
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const express = require("express");
+const validateUserPostIds = require("../helper/validateUserPostIds");
+const validateUserCommentIds = require("../helper/validateUserCommentIds");
 const { User, validate } = require("../models/users");
 const router = express.Router();
 
@@ -27,6 +29,101 @@ router.post("/", async (req, res) => {
     .header("x-auth-token", token)
     .header("access-control-expose-headers", "x-auth-token")
     .send(_.pick(user, ["name", "email"]));
+});
+
+router.get("/:id/hiddenposts", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  res.send(user.hiddenPosts);
+});
+
+router.get("/:id/savedposts", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  res.send(user.savedPosts);
+});
+
+router.get("/:id/hiddencomments", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  res.send(user.hiddenComments);
+});
+
+router.post("/savepost/add", async (req, res) => {
+  const { error } = validateUserPostIds(req.body);
+  if (error) return res.status(400).send(error.detials[0].message);
+
+  const user = await User.findById(req.body.userId);
+  const index = user.savedPosts.indexOf(req.body.postId);
+  if (index > -1) return res.send("Post is already saved");
+
+  user.savedPosts.push(req.body.postId);
+  await user.save();
+  res.send(user.savedPosts);
+});
+
+router.post("/savepost/remove", async (req, res) => {
+  const { error } = validateUserPostIds(req.body);
+  if (error) return res.status(400).send(error.detials[0].message);
+
+  const user = await User.findById(req.body.userId);
+  const index = user.savedPosts.indexOf(req.body.postId);
+  if (index === -1) return res.send("Post is already unsaved");
+
+  user.savedPosts.splice(index, 1);
+  await user.save();
+  res.send(user.savedPosts);
+});
+
+router.post("/hiddenpost/add", async (req, res) => {
+  const { error } = validateUserPostIds(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const user = await User.findById(req.body.userId);
+  if (user.hiddenPosts.indexOf(req.body.postId) > -1)
+    return res.status(400).send("Post already hidden");
+
+  user.hiddenPosts.push(req.body.postId);
+  await user.save();
+  res.send(user.hiddenPosts);
+});
+
+router.post("/hiddenpost/remove", async (req, res) => {
+  const { error } = validateUserPostIds(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const user = await User.findById(req.body.userId);
+  const index = user.hiddenPosts.indexOf(req.body.postId);
+  if (index === -1) return res.status(400).send("Post is not hidden");
+
+  user.hiddenPosts.splice(index, 1);
+  await user.save();
+  res.send(user.hiddenPosts);
+});
+
+router.post("/hiddencomment/add", async (req, res) => {
+  const { error } = validateUserCommentIds(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const user = await User.findById(req.body.userId);
+  const index = user.hiddenComments.indexOf(req.body.commentId);
+  if (index !== -1) return res.status(400).send("Comment already hidden");
+
+  user.hiddenComments.push(req.body.commentId);
+  await user.save();
+
+  res.send(user.hiddenComments);
+});
+
+router.post("/hiddencomment/remove", async (req, res) => {
+  const { error } = validateUserCommentIds(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const user = await User.findById(req.body.userId);
+  const index = user.hiddenComments.indexOf(req.body.commentId);
+  if (index === -1) return res.status(400).send("Comment is not hidden");
+
+  user.hiddenComments.splice(index, 1);
+  await user.save();
+
+  res.send(user.hiddenComments);
 });
 
 module.exports = router;

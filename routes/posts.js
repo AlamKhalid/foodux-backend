@@ -45,30 +45,20 @@ router.post("/", async (req, res) => {
   res.send(post);
 });
 
-router.post("/hidden/add", async (req, res) => {
-  const { error } = validateUserPostIds(req.body);
+router.put("/:id", async (req, res) => {
+  const { error } = validate(
+    _.pick(req.body, ["postBody", "location", "amountSpend"])
+  );
   if (error) return res.status(400).send(error.details[0].message);
 
-  const user = await User.findById(req.body.userId);
-  if (user.hiddenPosts.indexOf(req.body.postId) > -1)
-    return res.status(400).send("Post already hidden");
+  const post = await Post.findById(req.params.id);
 
-  user.hiddenPosts.push(req.body.postId);
-  await user.save();
-  res.send(user.hiddenPosts);
-});
+  post.postBody = req.body.postBody;
+  post.location = req.body.location;
+  post.amountSpend = req.body.amountSpend;
 
-router.post("/hidden/remove", async (req, res) => {
-  const { error } = validateUserPostIds(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
-  const user = await User.findById(req.body.userId);
-  const index = user.hiddenPosts.indexOf(req.body.postId);
-  if (index === -1) return res.status(400).send("Post is not hidden");
-
-  user.hiddenPosts.splice(index, 1);
-  await user.save();
-  res.send(user.hiddenPosts);
+  await post.save();
+  res.send(post);
 });
 
 router.delete("/", async (req, res) => {

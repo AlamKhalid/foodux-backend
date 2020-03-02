@@ -21,6 +21,15 @@ const userSchema = new mongoose.Schema({
       ref: "Post"
     }
   ],
+  hiddenComments: [
+    { type: mongoose.Schema.Types.ObjectId, ref: "Post.comments" }
+  ],
+  savedPosts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post"
+    }
+  ],
   following: [
     {
       type: mongoose.Schema.Types.ObjectId,

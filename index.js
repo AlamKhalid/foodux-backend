@@ -7,6 +7,7 @@ const auth = require("./routes/auth");
 const users = require("./routes/users");
 const posts = require("./routes/posts");
 const cities = require("./routes/cities");
+const categories = require("./routes/categories");
 const comments = require("./routes/comments");
 const likes = require("./routes/likes");
 
@@ -33,6 +34,7 @@ app.use("/api/users", users);
 app.use("/api/auth", auth);
 app.use("/api/posts", posts);
 app.use("/api/cities", cities);
+app.use("/api/categories", categories);
 app.use("/api/comments", comments);
 app.use("/api/likes", likes);
 app.use(error);
