@@ -6,6 +6,7 @@ const Joi = require("joi");
 const { User } = require("../models/users");
 const router = express.Router();
 
+// validates the user for login purpose
 validate = user => {
   const schema = {
     email: Joi.string()
@@ -17,6 +18,7 @@ validate = user => {
   return Joi.validate(user, schema);
 };
 
+// route to login user after validating the credentials
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -28,7 +30,7 @@ router.post("/", async (req, res) => {
   if (!validPassword) return res.status(400).send("Invalid email or password");
 
   const token = user.generateAuthToken();
-  res.send(token);
+  res.send(token); // send the jwt, which can be stored in local storage at front-end
 });
 
 module.exports = router;

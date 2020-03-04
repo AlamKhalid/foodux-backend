@@ -3,6 +3,7 @@ const Joi = require("joi");
 const { commentSchema } = require("./comments");
 const { getDate, getTime } = require("../helper/date");
 
+// defining the scheme for post document
 const postSchema = new mongoose.Schema({
   postBody: String,
   location: String,
@@ -18,8 +19,10 @@ const postSchema = new mongoose.Schema({
   time: { type: String, default: getTime }
 });
 
+// making the model of Post document depending upon the schema created above
 const Post = mongoose.model("Post", postSchema);
 
+// validating the post
 validatePost = post => {
   const schema = {
     postBody: Joi.string()

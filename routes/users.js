@@ -36,6 +36,11 @@ router.get("/:id/hiddenposts", async (req, res) => {
   res.send(user.hiddenPosts);
 });
 
+router.get("/:id/posts", async (req, res) => {
+  const userPosts = await User.findById(req.params.id).select("posts");
+  return res.send(userPosts.posts);
+});
+
 router.get("/:id/savedposts", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.send(user.savedPosts);
@@ -44,6 +49,11 @@ router.get("/:id/savedposts", async (req, res) => {
 router.get("/:id/hiddencomments", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.send(user.hiddenComments);
+});
+
+router.get("/:id", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  res.send(user);
 });
 
 router.post("/savepost/add", async (req, res) => {

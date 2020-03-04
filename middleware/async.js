@@ -1,3 +1,5 @@
+// middleware that wraps every code in try catch block
+// saves us from writing ugly try catch block everytime
 module.exports = function(handler) {
   return async (req, res, next) => {
     try {

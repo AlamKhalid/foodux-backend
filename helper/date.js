@@ -1,8 +1,10 @@
+// this function appends zeros to the right of numbers < 10
 appendZero = i => {
   if (i < 10) return `0${i}`;
   return i;
 };
 
+// returns the time in hh:mm:ss format
 getTime = () => {
   let today = new Date();
   let h = today.getHours();
@@ -13,6 +15,7 @@ getTime = () => {
   return `${h}:${m}:${s}`;
 };
 
+// returns the date in dd-mm-yyyy format
 getDate = () => {
   let today = new Date();
   let dd = today.getDate();
