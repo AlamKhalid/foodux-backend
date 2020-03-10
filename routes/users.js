@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
     .send(_.pick(user, ["name", "email"]));
 });
 
-router.get("/:id/hiddenposts", async (req, res) => {
+router.get("/:id/hidden-posts", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.send(user.hiddenPosts);
 });
@@ -41,12 +41,12 @@ router.get("/:id/posts", async (req, res) => {
   return res.send(userPosts.posts);
 });
 
-router.get("/:id/savedposts", async (req, res) => {
+router.get("/:id/saved-posts", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.send(user.savedPosts);
 });
 
-router.get("/:id/hiddencomments", async (req, res) => {
+router.get("/:id/hidden-comments", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.send(user.hiddenComments);
 });
@@ -56,7 +56,7 @@ router.get("/:id", async (req, res) => {
   res.send(user);
 });
 
-router.post("/savepost/add", async (req, res) => {
+router.post("/save-post/add", async (req, res) => {
   const { error } = validateUserPostIds(req.body);
   if (error) return res.status(400).send(error.detials[0].message);
 
@@ -69,7 +69,7 @@ router.post("/savepost/add", async (req, res) => {
   res.send(user.savedPosts);
 });
 
-router.post("/savepost/remove", async (req, res) => {
+router.post("/save-post/remove", async (req, res) => {
   const { error } = validateUserPostIds(req.body);
   if (error) return res.status(400).send(error.detials[0].message);
 
@@ -82,7 +82,7 @@ router.post("/savepost/remove", async (req, res) => {
   res.send(user.savedPosts);
 });
 
-router.post("/hiddenpost/add", async (req, res) => {
+router.post("/hidden-post/add", async (req, res) => {
   const { error } = validateUserPostIds(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -95,7 +95,7 @@ router.post("/hiddenpost/add", async (req, res) => {
   res.send(user.hiddenPosts);
 });
 
-router.post("/hiddenpost/remove", async (req, res) => {
+router.post("/hidden-post/remove", async (req, res) => {
   const { error } = validateUserPostIds(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -108,7 +108,7 @@ router.post("/hiddenpost/remove", async (req, res) => {
   res.send(user.hiddenPosts);
 });
 
-router.post("/hiddencomment/add", async (req, res) => {
+router.post("/hidden-comment/add", async (req, res) => {
   const { error } = validateUserCommentIds(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -122,7 +122,7 @@ router.post("/hiddencomment/add", async (req, res) => {
   res.send(user.hiddenComments);
 });
 
-router.post("/hiddencomment/remove", async (req, res) => {
+router.post("/hidden-comment/remove", async (req, res) => {
   const { error } = validateUserCommentIds(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
