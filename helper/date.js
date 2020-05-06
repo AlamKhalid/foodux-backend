@@ -1,5 +1,5 @@
 // this function appends zeros to the right of numbers < 10
-appendZero = i => {
+appendZero = (i) => {
   if (i < 10) return `0${i}`;
   return i;
 };
@@ -28,7 +28,29 @@ getDate = () => {
   return today;
 };
 
+getJoinedDate = () => {
+  const today = new Date();
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "Novmeber",
+    " December",
+  ];
+  const mm = today.getMonth(); //January is 0
+  const year = today.getFullYear();
+  return `${months[mm]} ${year}`;
+};
+
 module.exports = {
   getDate: getDate,
-  getTime: getTime
+  getJoinedDate: getJoinedDate,
+  getTime: getTime,
 };

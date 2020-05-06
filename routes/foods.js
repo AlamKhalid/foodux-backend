@@ -3,21 +3,16 @@ const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
 
-const City = mongoose.model(
-  "City",
+const Food = mongoose.model(
+  "Food",
   new mongoose.Schema({
     name: String,
   })
 );
 
 router.get("/", async (req, res) => {
-  const cities = await City.find();
-  res.send(cities);
-});
-
-router.get("/:id", async (req, res) => {
-  const city = await City.findById(req.params.id);
-  res.send(city);
+  const foods = await Food.find();
+  res.send(foods);
 });
 
 module.exports = router;

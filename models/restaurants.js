@@ -3,13 +3,15 @@ const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
-const userSchema = new mongoose.Schema({
+const restaurantSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, unique: true, required: true, trim: true },
   password: { type: String, required: true },
+  website: { type: String, required: true },
   isVerified: { type: Boolean, default: false },
-  isRestaurant: Boolean,
+  isRestaurant: { type: Boolean, default: true },
   joinedOn: String,
+  phone: String,
   posts: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -31,16 +33,28 @@ const userSchema = new mongoose.Schema({
       ref: "Post",
     },
   ],
-  followers: [
+  followingUsers: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
   ],
-  following: [
+  followersUsers: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+  ],
+  followingRestaurants: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
+    },
+  ],
+  followersRestaurants: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
     },
   ],
   likedPosts: [
@@ -49,43 +63,9 @@ const userSchema = new mongoose.Schema({
       ref: "Post",
     },
   ],
-  // start of user attributes
-  bio: { type: String, trim: true },
-  birthday: String,
-  gender: { type: String, enum: ["male", "female"] },
-  livesIn: { type: mongoose.Schema.Types.ObjectId, ref: "City" },
-  favFood: { type: mongoose.Schema.Types.ObjectId, ref: "Food" },
-  favRestaurant: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  restaurantsVisited: [
-    {
-      restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      times: Number,
-    },
-  ],
-  // start of restaurant attributes
-  website: String,
-  phone: String,
-  type: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Type",
-    },
-  ],
-  serves: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Food",
-    },
-  ],
-  branches: [
-    {
-      city: String,
-      subareas: [String],
-    },
-  ],
 });
 
-userSchema.methods.generateAuthToken = function () {
+restaurantSchema.methods.generateAuthToken = function () {
   return jwt.sign(
     {
       _id: this._id,
@@ -97,17 +77,18 @@ userSchema.methods.generateAuthToken = function () {
   );
 };
 
-const User = mongoose.model("User", userSchema);
+const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 
-validateUser = (user) => {
+validateRestaurant = (restaurant) => {
   const schema = {
     name: Joi.string().required(),
     email: Joi.string().email().required(),
     password: Joi.string().required(),
+    website: Joi.string().required(),
   };
 
-  return Joi.validate(user, schema);
+  return Joi.validate(restaurant, schema);
 };
 
-module.exports.User = User;
-module.exports.validate = validateUser;
+module.exports.Restaurant = Restaurant;
+module.exports.validate = validateRestaurant;
