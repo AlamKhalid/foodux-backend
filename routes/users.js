@@ -151,7 +151,9 @@ router.put("/:id/basic-settings", async (req, res) => {
 });
 
 router.get("/restaurants/get", async (req, res) => {
-  const users = await User.find({ isRestaurant: true }).select("name");
+  const users = await User.find({ isRestaurant: true }).select(
+    "name profilePic"
+  );
   res.send(users);
 });
 
