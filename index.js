@@ -10,9 +10,9 @@ const categories = require("./routes/categories");
 const comments = require("./routes/comments");
 const likes = require("./routes/likes");
 const foods = require("./routes/foods");
-const restaurants = require("./routes/restaurants");
 const types = require("./routes/types");
 const posts = require("./routes/posts");
+const blogPosts = require("./routes/blogPosts");
 
 const app = express();
 
@@ -41,8 +41,8 @@ app.use("/api/comments", comments);
 app.use("/api/likes", likes);
 app.use("/api/foods", foods);
 app.use("/api/types", types);
-app.use("/api/restaurants", restaurants);
 app.use("/api/posts", posts);
+app.use("/api/blog-posts", blogPosts);
 app.use(error);
 
 const port = process.env.PORT || 4000;

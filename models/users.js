@@ -9,7 +9,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   isVerified: { type: Boolean, default: false },
   isRestaurant: Boolean,
+  isEditor: { type: Boolean, default: false },
   joinedOn: String,
+  profilePic: String,
   posts: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -49,6 +51,7 @@ const userSchema = new mongoose.Schema({
       ref: "Post",
     },
   ],
+  blogPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: "BlogPost" }],
   // start of user attributes
   bio: { type: String, trim: true },
   birthday: String,
@@ -63,6 +66,7 @@ const userSchema = new mongoose.Schema({
     },
   ],
   // start of restaurant attributes
+  menuPic: String,
   website: String,
   phone: String,
   type: [
@@ -91,7 +95,10 @@ userSchema.methods.generateAuthToken = function () {
       _id: this._id,
       name: this.name,
       email: this.email,
+      pic: this.profilePic,
       isRestaurant: this.isRestaurant,
+      isEditor: this.isEditor,
+      isAdmin: this.isAdmin,
     },
     config.get("jwtPrivateKey")
   );

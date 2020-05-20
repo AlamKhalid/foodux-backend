@@ -71,31 +71,17 @@ router.get("/:id/verify", async (req, res) => {
   res.send(user.isVerified);
 });
 
-router.get("/:id/followers-users", async (req, res) => {
+router.get("/:id/followers", async (req, res) => {
   const followers = await User.findById(req.params.id)
-    .select("followersUsers -_id")
-    .populate("followersUsers", "name");
+    .select("followers -_id")
+    .populate("followers", "name");
   res.send(followers);
 });
 
-router.get("/:id/following-res", async (req, res) => {
+router.get("/:id/following", async (req, res) => {
   const following = await User.findById(req.params.id)
-    .select("followingRestaurants -_id")
-    .populate("followingRestaurants", "name");
-  res.send(following);
-});
-
-router.get("/:id/followers-res", async (req, res) => {
-  const followers = await User.findById(req.params.id)
-    .select("followersRestaurants -_id")
-    .populate("followersRestaurants", "name");
-  res.send(followers);
-});
-
-router.get("/:id/following-users", async (req, res) => {
-  const following = await User.findById(req.params.id)
-    .select("followingUsers -_id")
-    .populate("followingUsers", "name");
+    .select("following -_id")
+    .populate("following", "name");
   res.send(following);
 });
 
@@ -104,7 +90,12 @@ router.get("/:id", async (req, res) => {
     .populate("livesIn", " name")
     .populate("favFood", " name")
     .populate("favRestaurant", " name")
-    .populate("restaurantsVisited.restaurantId", "name");
+    .populate("restaurantsVisited.restaurantId", "name")
+    .populate("type", "name")
+    .populate("serves", "name")
+    .populate({ path: "savedPosts", populate: { path: "postBy" } })
+    .populate({ path: "hiddenPosts", populate: { path: "postBy" } })
+    .populate("posts");
   res.send(user);
 });
 
@@ -116,9 +107,14 @@ router.put("/:id/change-password", async (req, res) => {
   if (compareOld) return res.send("same");
   await user
     .populate("livesIn", " name")
-    .populate("favFood", "name")
-    .populate("favRestaurant", "name")
+    .populate("favFood", " name")
+    .populate("favRestaurant", " name")
     .populate("restaurantsVisited.restaurantId", "name")
+    .populate("type", "name")
+    .populate("serves", "name")
+    .populate({ path: "savedPosts", populate: { path: "postBy" } })
+    .populate({ path: "hiddenPosts", populate: { path: "postBy" } })
+    .populate("posts")
     .execPopulate();
   res.send(user);
 });
@@ -133,15 +129,23 @@ router.put("/:id/update-bio", async (req, res) => {
 router.put("/:id/basic-settings", async (req, res) => {
   const user = await User.findById(req.params.id);
   user.name = req.body.name;
-  user.birthday = `${req.body.date}-${req.body.month}-${req.body.year}`;
-  user.gender = req.body.gender;
-
+  if (user.isRestaurant) {
+    user.website = req.body.website;
+  } else {
+    user.birthday = `${req.body.date}-${req.body.month}-${req.body.year}`;
+    user.gender = req.body.gender;
+  }
   await user.save();
   await user
     .populate("livesIn", " name")
-    .populate("favFood", "name")
-    .populate("favRestaurant", "name")
+    .populate("favFood", " name")
+    .populate("favRestaurant", " name")
     .populate("restaurantsVisited.restaurantId", "name")
+    .populate("type", "name")
+    .populate("serves", "name")
+    .populate({ path: "savedPosts", populate: { path: "postBy" } })
+    .populate({ path: "hiddenPosts", populate: { path: "postBy" } })
+    .populate("posts")
     .execPopulate();
   res.send(user);
 });
@@ -165,6 +169,18 @@ router.get("/restaurants/:city", async (req, res) => {
   res.send(rests);
 });
 
+router.get("/:id/get-branches", async (req, res) => {
+  const branches = await User.findById(req.params.id).select("branches -_id");
+  res.send(branches.branches);
+});
+
+router.put("/:id/change-pic", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  user.profilePic = req.body.pic;
+  await user.save();
+  res.send(user.profilePic);
+});
+
 router.put("/:id/profile-settings", async (req, res) => {
   const user = await User.findById(req.params.id);
   user.favRestaurant = req.body.favRestaurant;
@@ -175,9 +191,14 @@ router.put("/:id/profile-settings", async (req, res) => {
   await user.save();
   await user
     .populate("livesIn", " name")
-    .populate("favFood", "name")
-    .populate("favRestaurant", "name")
+    .populate("favFood", " name")
+    .populate("favRestaurant", " name")
     .populate("restaurantsVisited.restaurantId", "name")
+    .populate("type", "name")
+    .populate("serves", "name")
+    .populate({ path: "savedPosts", populate: { path: "postBy" } })
+    .populate({ path: "hiddenPosts", populate: { path: "postBy" } })
+    .populate("posts")
     .execPopulate();
   res.send(user);
 });
@@ -187,14 +208,14 @@ router.post("/:id/start-following-user", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   const follower = await User.findById(req.params.id);
-  if (follower.followingUsers.indexOf(req.body.userId) > -1) {
+  if (follower.following.indexOf(req.body.userId) > -1) {
     return res.status(400).send("Already following the user");
   }
 
-  follower.followingUsers.push(req.body.userId);
+  follower.following.push(req.body.userId);
   await follower.save();
   const following = await User.findById(req.body.userId);
-  following.followersUsers.push(req.params.id);
+  following.followers.push(req.params.id);
   await following.save();
 
   res.send(follower.following);
@@ -205,14 +226,14 @@ router.post("/:id/stop-following-user", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   const follower = await User.findById(req.params.id);
-  if (follower.followingUsers.indexOf(req.body.userId) === -1) {
+  if (follower.followings.indexOf(req.body.userId) === -1) {
     return res.status(400).send("Follower does not exist");
   }
 
-  follower.followingUsers.splice(req.body.userId, 1);
+  follower.following.splice(req.body.userId, 1);
   await follower.save();
   const following = await User.findById(req.body.userId);
-  following.followersUsers.splice(req.params.id, 1);
+  following.followers.splice(req.params.id, 1);
   await following.save();
 
   res.send(follower.following);
@@ -220,7 +241,7 @@ router.post("/:id/stop-following-user", async (req, res) => {
 
 router.post("/save-post/add", async (req, res) => {
   const { error } = validateUserPostIds(req.body);
-  if (error) return res.status(400).send(error.detials[0].message);
+  if (error) return res.status(400).send(error.details[0].message);
 
   const user = await User.findById(req.body.userId);
   const index = user.savedPosts.indexOf(req.body.postId);
@@ -233,7 +254,7 @@ router.post("/save-post/add", async (req, res) => {
 
 router.post("/save-post/remove", async (req, res) => {
   const { error } = validateUserPostIds(req.body);
-  if (error) return res.status(400).send(error.detials[0].message);
+  if (error) return res.status(400).send(error.details[0].message);
 
   const user = await User.findById(req.body.userId);
   const index = user.savedPosts.indexOf(req.body.postId);
@@ -246,12 +267,15 @@ router.post("/save-post/remove", async (req, res) => {
 
 router.post("/:id/add-details", async (req, res) => {
   const user = await User.findById(req.params.id);
+  user.profilePic = req.body.profilePic;
   if (user.isRestaurant) {
     user.branches = req.body.branches;
     user.type = req.body.type;
     user.phone = req.body.phone;
     user.serves = req.body.serves;
+    user.menuPic = req.body.menuPic;
   } else {
+    user.bio = req.body.bio;
     user.livesIn = req.body.livesIn;
     user.favFood = req.body.favFood;
     user.favRestaurant = req.body.favRestaurant;
@@ -287,9 +311,6 @@ router.post("/hidden-post/remove", async (req, res) => {
 });
 
 router.post("/hidden-comment/add", async (req, res) => {
-  const { error } = validateUserCommentIds(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   const user = await User.findById(req.body.userId);
   const index = user.hiddenComments.indexOf(req.body.commentId);
   if (index !== -1) return res.status(400).send("Comment already hidden");
@@ -300,10 +321,14 @@ router.post("/hidden-comment/add", async (req, res) => {
   res.send(user.hiddenComments);
 });
 
-router.post("/hidden-comment/remove", async (req, res) => {
-  const { error } = validateUserCommentIds(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+router.get("/:id/blog-posts", async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .select("blogPosts")
+    .populate("blogPosts", "title body img date");
+  res.send(user.blogPosts);
+});
 
+router.post("/hidden-comment/remove", async (req, res) => {
   const user = await User.findById(req.body.userId);
   const index = user.hiddenComments.indexOf(req.body.commentId);
   if (index === -1) return res.status(400).send("Comment is not hidden");

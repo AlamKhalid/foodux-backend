@@ -24,7 +24,7 @@ getDate = () => {
   let yyyy = today.getFullYear();
   dd = appendZero(dd);
   mm = appendZero(mm);
-  today = `${dd}-${mm}-${yyyy}`;
+  today = `${dd}/${mm}/${yyyy}`;
   return today;
 };
 

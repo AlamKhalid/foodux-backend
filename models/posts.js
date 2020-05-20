@@ -39,6 +39,7 @@ const postSchema = new mongoose.Schema({
   },
   date: { type: String, default: getDate },
   time: { type: String, default: getTime },
+  images: [String],
   // start of deal post attributes
   oldPrice: Number,
   dealPrice: Number,
@@ -51,9 +52,10 @@ const postSchema = new mongoose.Schema({
   // start of review post attributes
   restaurant: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Restaurant",
+    ref: "User",
   },
-  location: { type: String, trim: true }, // same for recommendation asking
+  branchCity: String,
+  branchArea: String,
   amountSpend: { type: String, trim: true },
   ateFood: [String],
   opinion: { type: String, trim: true },
@@ -65,12 +67,12 @@ const postSchema = new mongoose.Schema({
   price: Number,
   foodType: String,
   // start of recommendation asking attributes
-  // location - same as above defined
+  // location - same as defined below
   preferredFood: [String],
   preferredType: [String],
   budget: String,
+  location: { type: String, trim: true },
   // start of what you can eat post attributes
-  // locaiton - same as above defined
   // budget - same as above
   // ateFood - same as above
   // overallRating - same as above
