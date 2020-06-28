@@ -71,6 +71,11 @@ router.get("/:id/verify", async (req, res) => {
   res.send(user.isVerified);
 });
 
+router.get("/:id/isVerified", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  res.send(user.isVerified);
+});
+
 router.get("/:id/followers", async (req, res) => {
   const followers = await User.findById(req.params.id)
     .select("followers -_id")
