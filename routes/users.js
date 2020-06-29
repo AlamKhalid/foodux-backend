@@ -71,7 +71,7 @@ router.get("/:id/verify", async (req, res) => {
   res.send(user.isVerified);
 });
 
-router.get("/:id/isVerified", async (req, res) => {
+router.get("/:id/is-verified", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.send(user.isVerified);
 });
@@ -160,6 +160,12 @@ router.get("/restaurants/get", async (req, res) => {
     "name profilePic"
   );
   res.send(users);
+});
+
+router.get("/:id/details-filled", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  const detailsFilled = user.isRestaurant ? user.phone : user.livesIn;
+  res.send(detailsFilled);
 });
 
 router.get("/:id/get-serves", async (req, res) => {
