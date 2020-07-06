@@ -37,7 +37,7 @@ mongoose
   });
 
 app.get("/", (req, res) => {
-  res.status(status.OK).send({ Message: "Connected", status: status.OK });
+  res.status(200).send({ Message: "Connected", status: 200 });
 });
 
 app.use("/api/users", users);
