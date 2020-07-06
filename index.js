@@ -34,6 +34,8 @@ mongoose
     console.error("Error connecting to database...", err);
   });
 
+app.get("/", (req, res) => res.send({ status: "200", message: "Connected" }));
+
 app.use(cors());
 app.use(express.json());
 app.use("/api/users", users);
