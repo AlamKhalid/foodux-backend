@@ -15,6 +15,8 @@ const posts = require("./routes/posts");
 const blogPosts = require("./routes/blogPosts");
 
 const app = express();
+app.use(cors());
+app.use(express.json());
 
 if (!config.get("jwtPrivateKey")) {
   console.log("FATAL ERROR: jwtPrivateKey is not defined");
@@ -34,10 +36,10 @@ mongoose
     console.error("Error connecting to database...", err);
   });
 
-app.get("/", (req, res) => res.send({ status: "200", message: "Connected" }));
+app.get("/", (req, res) => {
+  res.status(status.OK).send({ Message: "Connected", status: status.OK });
+});
 
-app.use(cors());
-app.use(express.json());
 app.use("/api/users", users);
 app.use("/api/auth", auth);
 app.use("/api/cities", cities);
