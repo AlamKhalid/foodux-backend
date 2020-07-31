@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
   user.joinedOn = getJoinedDate();
   await user.save();
   const token = user.generateAuthToken();
-  // sendMail(req.body.email, `http://localhost:3000/${user._id}/verify`);
+  sendMail(req.body.email, `http://localhost:3000/${user._id}/verify`);
   res
     .header("x-auth-token", token)
     .header("access-control-expose-headers", "x-auth-token")
