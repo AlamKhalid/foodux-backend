@@ -19,6 +19,15 @@ router.post("/inc", async (req, res) => {
   const user = await User.findById(req.body.userId);
   user.likedPosts.push(req.body.postId);
 
+  if (req.body.userId !== post.postBy) {
+    const postUser = await User.findById(post.postBy);
+    postUser.notifications.unshift({
+      doneBy: req.body.userId,
+      notType: "liked",
+    });
+    await postUser.save();
+  }
+
   await post.save();
   await user.save();
 

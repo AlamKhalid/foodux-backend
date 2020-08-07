@@ -26,4 +26,26 @@ router.post("/", async (req, res) => {
   res.send(blogPost);
 });
 
+router.get("/:id", async (req, res) => {
+  const post = await BlogPost.findById(req.params.id).populate(
+    "postedBy",
+    "name"
+  );
+  res.send(post);
+});
+
+router.put("/:id", async (req, res) => {
+  const post = await BlogPost.findById(req.params.id);
+  post.title = req.body.title;
+  post.body = req.body.value;
+  post.img = req.body.img;
+  await post.save();
+  res.send(post);
+});
+
+router.delete("/:id", async (req, res) => {
+  const post = await BlogPost.findByIdAndDelete(req.params.id);
+  res.send(post);
+});
+
 module.exports = router;

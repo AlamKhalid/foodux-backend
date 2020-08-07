@@ -10,8 +10,18 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   isRestaurant: Boolean,
   isEditor: { type: Boolean, default: false },
+  isAdmin: { type: Boolean, default: false },
   joinedOn: String,
   profilePic: String,
+  notifications: [
+    {
+      notType: {
+        type: String,
+        enum: ["liked", "commented on", "started following"],
+      },
+      doneBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    },
+  ],
   posts: [
     {
       type: mongoose.Schema.Types.ObjectId,

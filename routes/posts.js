@@ -5,12 +5,26 @@ const { Post } = require("../models/posts");
 const { User } = require("../models/users");
 const router = express.Router();
 
+// search post or user
+router.get("/search/?", async (req, res) => {
+  const searchValue = req.query.value;
+  const foundUsers = await User.find({
+    name: { $regex: searchValue, $options: "i" },
+  }).select("name profilePic isRestaurant");
+  const foundPosts = await Post.find({
+    postBody: { $regex: searchValue, $options: "i" },
+  })
+    .select("postBy postBody images")
+    .populate("postBy", "name profilePic");
+  res.send({ users: foundUsers, posts: foundPosts });
+});
+
 // get details of a specific post from the database
 router.get("/:id", async (req, res) => {
   const post = await Post.findById(req.params.id)
     .populate("postBy", "name profilePic")
     .populate("restaurant", "name")
-    .populate("comments.commentBy", "name profilePic")
+    .populate("comments.commentBy", "name profilePic isRestaurant")
     .populate("likes", "name");
   res.send(post);
 });
@@ -20,7 +34,7 @@ router.get("/", async (req, res) => {
   const posts = await Post.find()
     .populate("postBy", "name profilePic")
     .populate("restaurant", "name")
-    .populate("comments.commentBy", "name profilePic")
+    .populate("comments.commentBy", "name profilePic isRestaurant")
     .populate("likes", "name")
     .populate("restaurantsBeen", "name")
     .populate("restaurant", "name")

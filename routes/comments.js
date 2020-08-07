@@ -10,6 +10,15 @@ router.post("/", async (req, res) => {
     commentBody: req.body.commentBody,
     commentBy: req.body.userId,
   });
+  if (req.body.userId !== post.postBy) {
+    const postUser = await User.findById(post.postBy);
+    postUser.notifications.unshift({
+      doneBy: req.body.userId,
+      notType: "commented on",
+    });
+    await postUser.save();
+  }
+
   await post.save();
   res.send(post);
 });

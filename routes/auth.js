@@ -29,7 +29,11 @@ router.post("/", async (req, res) => {
   if (!validPassword) return res.status(400).send("Invalid password");
 
   const token = user.generateAuthToken();
-  res.send({ token, isVerified: user.isVerified, filledDetails: details });
+  res.send({
+    token,
+    isVerified: user.isVerified,
+    filledDetails: details,
+  });
   // send the jwt, which can be stored in local storage at front-end
 });
 

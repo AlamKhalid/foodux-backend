@@ -49,14 +49,14 @@ router.get("/:id/hidden-posts", async (req, res) => {
   res.send(user.hiddenPosts);
 });
 
-router.get("/:id/posts", async (req, res) => {
-  const userPosts = await User.findById(req.params.id).select("posts");
-  return res.send(userPosts.posts);
-});
-
 router.get("/:id/saved-posts", async (req, res) => {
   const user = await User.findById(req.params.id);
   res.send(user.savedPosts);
+});
+
+router.get("/:id/posts", async (req, res) => {
+  const userPosts = await User.findById(req.params.id).select("posts");
+  return res.send(userPosts.posts);
 });
 
 router.get("/:id/hidden-comments", async (req, res) => {
@@ -79,14 +79,14 @@ router.get("/:id/is-verified", async (req, res) => {
 router.get("/:id/followers", async (req, res) => {
   const followers = await User.findById(req.params.id)
     .select("followers -_id")
-    .populate("followers", "name");
+    .populate("followers", "name profilePic");
   res.send(followers);
 });
 
 router.get("/:id/following", async (req, res) => {
   const following = await User.findById(req.params.id)
     .select("following -_id")
-    .populate("following", "name");
+    .populate("following", "name profilePic");
   res.send(following);
 });
 
@@ -155,11 +155,41 @@ router.put("/:id/basic-settings", async (req, res) => {
   res.send(user);
 });
 
+router.get("/:id/notifications", async (req, res) => {
+  const user = await User.findById(req.params.id).populate(
+    "notifications.doneBy",
+    "name profilePic"
+  );
+  res.send(user.notifications.slice(0, 5).map((i) => i));
+});
+
 router.get("/restaurants/get", async (req, res) => {
   const users = await User.find({ isRestaurant: true }).select(
     "name profilePic"
   );
   res.send(users);
+});
+
+router.get("/restaurants/get-deals-and-discounts", async (req, res) => {
+  const restaurants = await User.find({ isRestaurant: true })
+    .select("posts name profilePic")
+    .populate(
+      "posts",
+      "dealItems postType oldPrice dealPrice validTill validOn images"
+    );
+  const nowTime = new Date().getTime();
+  for (let i in restaurants) {
+    restaurants[i].posts = restaurants[i].posts.filter((p) => {
+      const validTillSplit = p.validTill.split("-");
+      const dealTime = new Date(
+        validTillSplit[2],
+        parseInt(validTillSplit[1]) - 1,
+        validTillSplit[0]
+      );
+      return dealTime > nowTime;
+    });
+  }
+  res.send(restaurants);
 });
 
 router.get("/:id/details-filled", async (req, res) => {
@@ -173,6 +203,16 @@ router.get("/:id/get-serves", async (req, res) => {
     .select("name serves")
     .populate("serves", "name");
   res.send(resServes.serves);
+});
+
+router.get("/restaurants/featured", async (req, res) => {
+  const restaurants = await User.find({ isRestaurant: true }).populate(
+    "serves",
+    "name"
+  );
+  const len = restaurants.length;
+  const featured = [restaurants[len - 1], restaurants[len - 2]];
+  res.send(featured);
 });
 
 router.get("/restaurants/:city", async (req, res) => {
@@ -217,9 +257,6 @@ router.put("/:id/profile-settings", async (req, res) => {
 });
 
 router.post("/:id/start-following-user", async (req, res) => {
-  const { error } = validateUserId(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   const follower = await User.findById(req.params.id);
   if (follower.following.indexOf(req.body.userId) > -1) {
     return res.status(400).send("Already following the user");
@@ -229,17 +266,18 @@ router.post("/:id/start-following-user", async (req, res) => {
   await follower.save();
   const following = await User.findById(req.body.userId);
   following.followers.push(req.params.id);
+  following.notifications.unshift({
+    doneBy: req.params.id,
+    notType: "started following",
+  });
   await following.save();
 
   res.send(follower.following);
 });
 
 router.post("/:id/stop-following-user", async (req, res) => {
-  const { error } = validateUserId(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   const follower = await User.findById(req.params.id);
-  if (follower.followings.indexOf(req.body.userId) === -1) {
+  if (follower.following.indexOf(req.body.userId) === -1) {
     return res.status(400).send("Follower does not exist");
   }
 
@@ -253,9 +291,6 @@ router.post("/:id/stop-following-user", async (req, res) => {
 });
 
 router.post("/save-post/add", async (req, res) => {
-  const { error } = validateUserPostIds(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   const user = await User.findById(req.body.userId);
   const index = user.savedPosts.indexOf(req.body.postId);
   if (index > -1) return res.send("Post is already saved");
@@ -266,9 +301,6 @@ router.post("/save-post/add", async (req, res) => {
 });
 
 router.post("/save-post/remove", async (req, res) => {
-  const { error } = validateUserPostIds(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   const user = await User.findById(req.body.userId);
   const index = user.savedPosts.indexOf(req.body.postId);
   if (index === -1) return res.send("Post is already unsaved");
@@ -298,9 +330,6 @@ router.post("/:id/add-details", async (req, res) => {
 });
 
 router.post("/hidden-post/add", async (req, res) => {
-  const { error } = validateUserPostIds(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   const user = await User.findById(req.body.userId);
   if (user.hiddenPosts.indexOf(req.body.postId) > -1)
     return res.status(400).send("Post already hidden");
@@ -311,9 +340,6 @@ router.post("/hidden-post/add", async (req, res) => {
 });
 
 router.post("/hidden-post/remove", async (req, res) => {
-  const { error } = validateUserPostIds(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-
   const user = await User.findById(req.body.userId);
   const index = user.hiddenPosts.indexOf(req.body.postId);
   if (index === -1) return res.status(400).send("Post is not hidden");
